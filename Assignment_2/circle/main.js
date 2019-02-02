@@ -31,23 +31,31 @@ function stars(starCount){
   
 }
 //CIRCLE
+function radian (degree) {
+    var rad = degree * (Math.PI / 180);
+    return rad;
+ }
 
 function circle(){
     
-    vertices = [];
+    var vertices = [];
     
+    var vert1 = [];
   
     for (let i=0; i<=360; i+=1) {
 
-        var j = i * Math.PI / 180;
-       
-        // circle_point.push( Math.sin(j),Math.cos(j),0);
-          // X Y Z
-    var vert1 = [
-        Math.sin(j),
-        Math.cos(j),
-        // 0,
-      ];
+      
+        vert1.push(Math.sin(radian(i)),Math.cos(radian(i)));
+
+    //     var j = i * Math.PI / 180;
+         
+    //     // circle_point.push( Math.sin(j),Math.cos(j),0);
+    //       // X Y Z
+    // var vert1 = [
+    //     Math.sin(j),
+    //     Math.cos(j),
+    //     // 0,
+    //   ];
       var vert2 = [
         0,
         0,
@@ -56,6 +64,7 @@ function circle(){
       vertices = vertices.concat(vert1);
       vertices = vertices.concat(vert2);
     }
+    // return vertices;
     return vertices;
 }
 
@@ -65,7 +74,7 @@ var vertCode =
       'precision mediump float;'+
       'void main(void) {'+
          // 'vColor = color;'+
-         'gl_Position = vec4(position, 1.0);'+
+         'gl_Position = vec4(position, 1);'+
         'gl_PointSize = 1.5;'+
      '}';
 
@@ -110,6 +119,4 @@ drawElement(gl.POINTS,starVertices,3,len);
 
 //DRAWING CIRCLE
 
-
-//drawElement(gl.TRIANGLE_STRIP,new Float32Array(circle()),2,722);
-drawElement(gl.LINES,new Float32Array(circle()),2,722);
+drawElement(gl.LINES,new Float32Array(circle()),2,65702);
