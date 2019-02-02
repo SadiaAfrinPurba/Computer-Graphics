@@ -1,27 +1,22 @@
 var canvas = document.getElementById('canvas');
 gl = canvas.getContext('experimental-webgl');
-
-
-
-const starCount = 1000;
+const starCount = 3000;
 var points = new Float32Array(starCount);
+// var circle_point = new Float32Array(starCount);
 gl.canvas.width  = gl.canvas.clientWidth  * window.devicePixelRatio;
 gl.canvas.height = gl.canvas.clientHeight * window.devicePixelRatio;
 gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
+gl.clearColor(0, 0, 0, 1);
+gl.enable(gl.DEPTH_TEST);
+gl.clear(gl.COLOR_BUFFER_BIT);
 
 //STARS
 function randInt(max) {
     return Math.random() * max | 0;
 }
 function stars(starCount){
-  
-    // for (let i=0.0; i<=360; i+=1) {
 
-    //     var j = i * Math.PI / 180;
-       
-    //     points.push( Math.sin(j),Math.cos(j),0);
-    // }
 
     for (var i = 0; i < starCount; i += 0.5) {
         var x = randInt(gl.canvas.width);
@@ -31,26 +26,46 @@ function stars(starCount){
         points[i + 1] = (y + 0.5) / gl.canvas.height * 2 - 1;
       }
      console.log(points);
-
+     return points;
 
   
 }
-stars(starCount);
-
-var star_buffer = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, star_buffer);
-gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
-
 //CIRCLE
 
+function circle(){
+    
+    vertices = [];
+    
+  
+    for (let i=0; i<=360; i+=1) {
+
+        var j = i * Math.PI / 180;
+       
+        // circle_point.push( Math.sin(j),Math.cos(j),0);
+          // X Y Z
+    var vert1 = [
+        Math.sin(j),
+        Math.cos(j),
+        // 0,
+      ];
+      var vert2 = [
+        0,
+        0,
+        // 0,
+      ];
+      vertices = vertices.concat(vert1);
+      vertices = vertices.concat(vert2);
+    }
+    return vertices;
+}
 
 
 var vertCode =
-      'attribute vec3 stars_coord;'+
+      'attribute vec3 position;'+
       'precision mediump float;'+
       'void main(void) {'+
          // 'vColor = color;'+
-         'gl_Position = vec4(stars_coord, 1.0);'+
+         'gl_Position = vec4(position, 1.0);'+
         'gl_PointSize = 1.5;'+
      '}';
 
@@ -74,23 +89,27 @@ gl.attachShader(shaderProgram, fragShader);
 gl.linkProgram(shaderProgram);
 gl.useProgram(shaderProgram);
 
-var stars_coord = gl.getAttribLocation(shaderProgram, "stars_coord");
-gl.enableVertexAttribArray(stars_coord);
-gl.bindBuffer(gl.ARRAY_BUFFER, star_buffer);
-gl.vertexAttribPointer(stars_coord, 3, gl.FLOAT, false, 0, 0);
+
+function drawElement(type,vertices,dim,len) {
+    var vertexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+    
+    var position = gl.getAttribLocation(shaderProgram, 'position');
+    gl.vertexAttribPointer(position, dim, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(position);
+
+    gl.drawArrays(type, 0, len);
+}
 
 
+//DRAWING STARS
+var starVertices = stars(starCount);
+var len = starCount/3;
+drawElement(gl.POINTS,starVertices,3,len);
 
-gl.clearColor(0, 0, 0, 1);
-gl.enable(gl.DEPTH_TEST);
-gl.clear(gl.COLOR_BUFFER_BIT);
-// gl.viewport(0,0,canvas.width,canvas.height);
-
-
-
-gl.drawArrays(gl.POINTS, 0, 333);
-// var then = 0;
- 
-// requestAnimationFrame();
+//DRAWING CIRCLE
 
 
+//drawElement(gl.TRIANGLE_STRIP,new Float32Array(circle()),2,722);
+drawElement(gl.LINES,new Float32Array(circle()),2,722);
