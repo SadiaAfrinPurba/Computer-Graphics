@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+   <body>
+      <canvas width = "150" height = "150" id = canvas></canvas>
+
+      <script>
+         /*================Creating a canvas=================*/
+         var drawingArea = document.getElementById('canvas');
+         glContext = drawingArea.getContext('experimental-webgl'); 
+         // returns a drawing context on the drawingArea. This context
+         // gives access to drawingArea to use GPU
+         
+
+         /*==========Defining the line equation=======*/
+
+         var points = [ ];
+         var m = 0.5;
+         var b = 0.1;
+         for (var i = 0; i <90; i=i+0.01) {
+               var x = i;
+               var y = m * x + b;
+               
+               points.push(x,y,0);
+         } 
+         
+		 
+         // Create an empty buffer object to store the vertex buffer
+         var vertex_buffer = glContext.createBuffer();
+		 
+
+         //Bind appropriate array buffer to it
+         glContext.bindBuffer(glContext.ARRAY_BUFFER, vertex_buffer);
+
+         // Pass the vertex data to the buffer
+         glContext.bufferData(glContext.ARRAY_BUFFER, new Float32Array(points), glContext.STATIC_DRAW);
+
+         
+
+         /*=========================Shaders========================*/
+
+         // vertex shader source code
+         var shaderVertex =
+            'attribute vec3 coordinates;' +
+
+            'void main(void) {' +
+               ' gl_Position = vec4(coordinates, 1.0);' +
+               'gl_PointSize = 3.0;'+
+            '}';
+
+         // Create a vertex shader object
+         var createVertexShader = glContext.createShader(glContext.VERTEX_SHADER);
+         
+         // Attach vertex shader source code
+         glContext.shaderSource(createVertexShader, shaderVertex);
+
+         // Compile the vertex shader
+         glContext.compileShader(createVertexShader);
+
+         // // fragment shader source code
+         var shaderFragment =
+            'void main(void) {' +
+               ' gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);' +
+               
+            '}';
+
+         // // Create fragment shader object
+         var createFragmentShader = glContext.createShader(glContext.FRAGMENT_SHADER);
+
+         // Attach fragment shader source code
+         glContext.shaderSource(createFragmentShader, shaderFragment);
+
+         // Compile the fragment shader
+         glContext.compileShader(createFragmentShader);
+         
+         // Create a shader program object to store
+         // the combined shader program
+         var shaderProgram = glContext.createProgram();
+
+         // // Attach a vertex shader
+         glContext.attachShader(shaderProgram, createVertexShader); 
+         
+  
+         
+         // Attach a fragment shader
+         glContext.attachShader(shaderProgram, createFragmentShader);
+
+         // Link both programs
+         glContext.linkProgram(shaderProgram);
+
+         // Use the combined shader program object
+         glContext.useProgram(shaderProgram);
+
+        
+         
+         
+
+         /*======== Associating shaders to buffer objects ========*/
+
+        
+
+         // Get the attribute location
+         var coord = glContext.getAttribLocation(shaderProgram, "coordinates");
+			
+         // Point an attribute to the currently bound VBO
+         glContext.vertexAttribPointer(coord, 3, glContext.FLOAT, false, 0, 0);
+
+         // Enable the attribute
+         glContext.enableVertexAttribArray(coord);
+		 
+		 
+
+         /*============= Drawing the primitive ===============*/
+
+         // Clear the canvas
+         glContext.clearColor(0.5, 0.5, 0.5, 0.9);
+
+         // Enable the depth test
+         glContext.enable(glContext.DEPTH_TEST);
+ 
+         // Clear the color buffer bit
+         glContext.clear(glContext.COLOR_BUFFER_BIT);
+
+         // Set the view port
+         glContext.viewport(0,0,drawingArea.width,drawingArea.height);
+
+         // Draw the line with points
+         glContext.drawArrays(glContext.POINTS, 0, 90);
+      </script>
+   </body>
+</html>
