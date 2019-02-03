@@ -64,8 +64,9 @@ function circle(){
         vert1.push(r*Math.sin(radian(i)),r*Math.cos(radian(i)));
         var vert2 = [
             // 0,0
-            r*Math.sin(radian(i)),
-            r*Math.cos(radian(i)),
+            r*Math.sin(radian(i*1000)),
+            r*Math.cos(radian(i*1000)),
+           
         
       ];
 
@@ -169,10 +170,10 @@ function click(ev, gl, canvas, fColorLocation)
 
         // gl.uniform4f(fColorLocation,r,g,b, a);
         gl.clearColor(0.2, 0.2, 0.2, 1);
-        // gl.clearColor( Math.random(), 0.2,  Math.random(), 0.7);
         gl.enable(gl.DEPTH_TEST);
         gl.clear(gl.COLOR_BUFFER_BIT);
-        draw(randInt(65702));
+        // draw(randInt(65702));
+        draw(65702);
 }
 
 
