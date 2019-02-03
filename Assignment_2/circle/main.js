@@ -21,7 +21,8 @@ const starCount = 9000;
 var points = new Float32Array(starCount);
 
 function randInt(max) {
-    return Math.random() * max | 0;
+    // return Math.random() * max | 0;
+    return Math.random() * max;
 }
 function stars(starCount){
 
@@ -53,19 +54,28 @@ function circle(){
     var vertices = [];
     var vert1 = [];
     var vert2 = [];
+    var r = .25;
   
     for (let i=0; i<=360; i+=1) {
          
-        vert1.push(Math.sin(radian(i)),Math.cos(radian(i)));
+        vert1.push(r*Math.sin(radian(i)),r*Math.cos(radian(i)));
         var vert2 = [
-        0,
-        0,
+            // 0,0
+            r*Math.sin(radian(i)),
+            r*Math.cos(radian(i)),
+        
       ];
+//       var vert3 = [
+//         Math.sin(radian(i+1)),
+//         Math.cos(radian(i+1)),
+//   ];
       vertices = vertices.concat(vert1);
       vertices = vertices.concat(vert2);
+    //   vertices = vertices.concat(vert3);
     }
     
     return vertices;
+    // return vert1;
 }
 
 /*********************************************
@@ -79,7 +89,7 @@ var vertCode =
       'precision mediump float;'+
       'void main(void) {'+
          // 'vColor = color;'+
-         'gl_Position = vec4(position, 1.1);'+
+         'gl_Position = vec4(position, 1);'+
         'gl_PointSize = 1.99;'+
      '}';
 
@@ -138,11 +148,13 @@ function draw(circle_point){
     drawElement(gl.POINTS,starVertices,3,len);
 
     //DRAWING CIRCLE
-    drawElement(gl.LINES,new Float32Array(circle()),2,circle_point);
+    drawElement(gl.LINE_LOOP,new Float32Array(circle()),2,circle_point);
 
 
 }
 draw(65702);
+//draw(65341);
+//draw(361);
 
 /*********************************************
      RANDOMLY COLOR CHANGE ON MOUSE CLICK
@@ -150,14 +162,14 @@ draw(65702);
 
 function click(ev, gl, canvas, fColorLocation)
 {
-        var r = Math.random();
-        var g = Math.random();
-        var b = Math.random();
-        var a = 1.0;
+        // var r = Math.random();
+        // var g = Math.random();
+        // var b = Math.random();
+        // var a = 1.0;
 
-        gl.uniform4f(fColorLocation,r,g,b, a);
-        console.log(fColorLocation);
+        // gl.uniform4f(fColorLocation,r,g,b, a);
         gl.clearColor(0.2, 0.2, 0.2, 1);
+        // gl.clearColor( Math.random(), 0.2,  Math.random(), 0.7);
         gl.enable(gl.DEPTH_TEST);
         gl.clear(gl.COLOR_BUFFER_BIT);
         draw(randInt(65702));
