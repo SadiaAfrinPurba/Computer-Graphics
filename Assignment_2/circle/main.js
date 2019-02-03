@@ -54,7 +54,10 @@ function circle(){
     var vertices = [];
     var vert1 = [];
     var vert2 = [];
-    var r = .25;
+
+    var x = () => Math.random()-.5;
+    var r = Math.sqrt( Math.pow((x()-.08), 2) + Math.pow((x()-.08), 2) );
+    //  var r = .25;
   
     for (let i=0; i<=360; i+=1) {
          
@@ -65,13 +68,10 @@ function circle(){
             r*Math.cos(radian(i)),
         
       ];
-//       var vert3 = [
-//         Math.sin(radian(i+1)),
-//         Math.cos(radian(i+1)),
-//   ];
+
       vertices = vertices.concat(vert1);
       vertices = vertices.concat(vert2);
-    //   vertices = vertices.concat(vert3);
+   
     }
     
     return vertices;
