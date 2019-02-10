@@ -1,0 +1,214 @@
+<!-- Problem Statement:
+    Draw a square. Reflect the square along a line which has the coordinates (-0.3,-0.2) and (0.6,0.8). 
+    Demonstrate fully how you used the composite transformation using comments in the code. 
+    You are free to use lines, points, or any other modes of drawing to implement the square.
+ -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Reflection about an arbitrary line</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+    
+</head>
+<body>
+    <canvas id="canvas" width=600 height=600></canvas>
+    <canvas id="canvas_before" width=600 height=600></canvas>
+    <script>
+            /*********************************************
+                     INITIAL SETUP
+            **********************************************/
+
+            var canvas = document.getElementById('canvas');
+            gl = canvas.getContext('experimental-webgl');
+
+            // make canvas 1x1 with display
+            // gl.canvas.width  = gl.canvas.clientWidth  * window.devicePixelRatio;
+            // gl.canvas.height = gl.canvas.clientHeight * window.devicePixelRatio;
+            gl.viewport(0, 0, canvas.width, canvas.height);
+
+            gl.clearColor(0.5, 0.5, 0.5, 1);
+            gl.enable(gl.DEPTH_TEST);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            /*********************************************
+                     CREATE SHADER PROGRAMS
+            **********************************************/
+
+
+            /**********Vertex Shader**********************/
+            var vertCode =
+                'precision mediump float;'+
+                'attribute vec4 position;'+
+                
+                'uniform mat4 u_translate;'+
+                'uniform mat4 u_rotate;'+
+                'uniform mat4 u_reflect;'+
+                'uniform mat4 u_inverseRotate;'+
+                'uniform mat4 u_inverseTranslate;'+
+                'uniform mat4 u_rotate90Deg;'+
+                'void main(void) {'+
+                //  'gl_Position = (position * ((u_inverseTranslate*line)*(u_inverseRotate*line)*u_reflect*(u_rotate*line)*(u_translate*line));'+
+                //'gl_Position = (position * (u_inverseTranslate*u_inverseRotate*u_reflect*u_rotate*u_translate));'+
+                // 'gl_Position = (position * (u_translate*u_rotate*u_reflect*u_inverseRotate*u_inverseTranslate));'+        
+                'gl_Position = (position * ( u_translate * u_rotate * u_reflect * u_inverseRotate * u_inverseTranslate));'+  
+                'gl_PointSize = 1.0;'+
+                '}';
+
+            var vertShader = gl.createShader(gl.VERTEX_SHADER);
+            gl.shaderSource(vertShader, vertCode);
+            gl.compileShader(vertShader);
+
+            /**********Fragment Shader**********************/
+            var fragCode =
+                'precision mediump float;'+
+                'void main(void) { '+
+                'gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);'+
+            
+            '}';
+            var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+            gl.shaderSource(fragShader, fragCode);
+            gl.compileShader(fragShader);
+
+            var shaderProgram = gl.createProgram();
+            gl.attachShader(shaderProgram, vertShader); 
+            gl.attachShader(shaderProgram, fragShader);
+            gl.linkProgram(shaderProgram);
+            gl.useProgram(shaderProgram);
+
+            /*********************************************
+                     LINE VERTICES
+            **********************************************/
+            const x1 = -0.3, x2 = 0.6, y1 = -0.2, y2 = 0.8;
+            var lineVertices = [
+                x1,y1,0,
+                x2,y2,0
+            ];
+            const m = (y2 - y1) / (x2 - x1);
+            const b = y2 - (m * x2);
+            const angleRadian = Math.atan(m);
+            const angleDegree = angleRadian * 180 / Math.PI;
+            console.log(m,b,angleRadian,angleDegree);
+
+            /*********************************************
+                     SQUARE VERTICES
+            **********************************************/
+            var squareVertices = [
+                 -0.1,0.4,0,
+                 0.2,0.4,0,
+
+                 -0.1,0.4,0,
+                 -0.1,0.6,0,
+
+                 -0.1,0.6,0,
+                  0.2,0.6,0,
+
+                  0.2,0.6,0,
+                  0.2,0.4,0
+            ];
+            /*********************************************
+                    COMPOSITE TRANSFORMATION
+            **********************************************/
+            //STEP:1 Translate (0, -b) so that the line passes through the origin
+            var translateLine = new Float32Array([
+                            1.0,  0.0,  0.0, 0.0, 
+                            0.0,  1.0,  0.0, -b,
+                            0.0,  0.0,  1.0, 0.0,
+                            0.0,  0.0,  0.0, 1.0
+              ]);
+            
+            //STEP 2: The translated line can be co-incident with x-axis by rotating it -angleRadian about the origin
+            var sinThetha = Math.sin(-angleRadian);
+            var sinThethaI = Math.sin(angleRadian);
+            var cosThetha = Math.cos(angleRadian);
+
+            var rotateLine = new Float32Array([
+                         cosThetha,  -sinThetha,  0.0,     0.0,
+                         sinThetha,    cosThetha, 0.0,     0.0,
+                         0.0,       0.0,          0.0,    0.0,
+                         0.0,       0.0,          0.0,    1.0
+              ]);
+          
+            //STEP 3: Reflect the square through x-axis
+            var reflectSquare = new Float32Array([
+                         1.0,  0.0,  0.0, 0.0, 
+                         0.0,  -1.0,  0.0, 0.0,
+                         0.0,  0.0,  0.0, 0.0,
+                         0.0,  0.0,  0.0, 1.0
+              ]);
+            
+            //STEP 4: Inverse rotation the line by thetha 
+            var inverseRotateLine = new Float32Array([
+                         cosThetha,  -sinThethaI,  0.0, 0.0,
+                         sinThethaI,  cosThetha,   0.0, 0.0,
+                         0.0,       0.0,           0.0, 0.0,
+                         0.0,       0.0,           0.0, 1.0
+              ]);
+
+            //STEP 5: Translate back the line to (0,b)
+            var inverseTranslateLine = new Float32Array([
+                            1.0,  0.0,  0.0, 0.0, 
+                            0.0,  1.0,  0.0,  b,
+                            0.0,  0.0,  1.0, 0.0,
+                            0.0,  0.0,  0.0, 1.0
+              ]);
+              var sin90 = Math.sin(1.571);
+              var cos90 = Math.cos(1.571);
+              var rotate90Deg = new Float32Array([
+                            1.0,  0.0,  0.0, 0.5, 
+                            0.0,  1.0,  0.0, 0.0,
+                            0.0,  0.0,  1.0, 0.0,
+                            0.0,  0.0,  0.0, 1.0
+              ]);
+            //   var rotate90Deg = new Float32Array([
+            //              cos90,  -sin90,  0.0, 0.0,
+            //              sin90,  cos90,   0.0, 0.0,
+            //              0.0,       0.0,  0.0, 0.0,
+            //              0.0,       0.0,   0.0, 1.0
+            //   ]);
+
+            function setUniformVariable(shaderProgramVariable,transformMatrix){
+                var u_xformMatrix = gl.getUniformLocation(shaderProgram, shaderProgramVariable);
+                gl.uniformMatrix4fv(u_xformMatrix, false, transformMatrix);
+            }
+            setUniformVariable('u_inverseTranslate',inverseTranslateLine);
+            setUniformVariable('u_inverseRotate',inverseRotateLine);
+            setUniformVariable('u_reflect',reflectSquare);
+            setUniformVariable('u_rotate',rotateLine);
+            setUniformVariable('u_translate',translateLine);
+            setUniformVariable('u_rotate90Deg',rotate90Deg);
+            
+            /*********************************************
+                     BINDING VERTICES WITH SHADERS
+            **********************************************/
+
+            function drawElement(type,vertices,len) {
+                var vertexBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices),gl.STATIC_DRAW);
+                
+                var position = gl.getAttribLocation(shaderProgram, 'position');
+                gl.vertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0);
+
+                gl.enableVertexAttribArray(position);
+                gl.drawArrays(type, 0, len);
+            }
+
+            /*********************************************
+                     DRAW LINES AND SQUARE
+            **********************************************/
+            drawElement(gl.LINES,lineVertices,2);
+            drawElement(gl.LINES,squareVertices,8);
+
+
+
+
+
+
+    </script>
+    
+</body>
+</html>

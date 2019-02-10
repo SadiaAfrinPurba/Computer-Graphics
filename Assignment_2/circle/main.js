@@ -163,12 +163,12 @@ draw(65702);
 
 function click(ev, gl, canvas, fColorLocation)
 {
-        // var r = Math.random();
-        // var g = Math.random();
-        // var b = Math.random();
-        // var a = 1.0;
+        var r = Math.random();
+        var g = Math.random();
+        var b = Math.random();
+        var a = 1.0;
 
-        // gl.uniform4f(fColorLocation,r,g,b, a);
+        gl.uniform4f(fColorLocation,r,g,b, a);
         gl.clearColor(0.2, 0.2, 0.2, 1);
         gl.enable(gl.DEPTH_TEST);
         gl.clear(gl.COLOR_BUFFER_BIT);

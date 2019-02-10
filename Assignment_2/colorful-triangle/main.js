@@ -64,8 +64,9 @@
     
      'precision mediump float;'+
       'varying vec3 vColor;'+
+      'uniform vec3 fColor;'+
       'void main(void) { '+
-         'gl_FragColor = vec4(vColor,1);'+
+         'gl_FragColor = vec4(vColor * fColor,1);'+
      '}';
 
   // Create fragment shader object
@@ -114,12 +115,25 @@
    gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
    gl.vertexAttribPointer(color, 3, gl.FLOAT, false, 0, 0);
    
+   var fColorLocation = gl.getUniformLocation(shaderProgram, "fColor");
+
+    canvas.onmousedown = function (ev) { click(ev, gl, canvas, fColorLocation); };
+
+    function click(ev, gl, canvas, fColorLocation)
+{
+        var r = ()=>Math.random();
+        gl.uniform3f(fColorLocation,r(),r(),r());
+        gl.clearColor(0.2, 0.2, 0.2, 1);
+        gl.enable(gl.DEPTH_TEST);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+}
 
   /*============= Drawing the primitive ===============*/
 
   // Clear the canvas
-  gl.clearColor(0, 0, 0, 1);
-
+//   gl.clearColor(0, 0, 0, 1);
+  gl.clearColor(0.2, 0.2, 0.2, 1);
   // Enable the depth test
   gl.enable(gl.DEPTH_TEST);
 
