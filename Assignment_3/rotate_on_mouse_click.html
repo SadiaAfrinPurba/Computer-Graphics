@@ -149,15 +149,13 @@
            
             drawElement(gl.LINES,squareVertices,8);
             var angle = gl.getUniformLocation(shaderProgram, "u_angle");
-            var x = gl.getUniformLocation(shaderProgram, "u_x");
-            var y = gl.getUniformLocation(shaderProgram, "u_y");
             var u_click = gl.getUniformLocation(shaderProgram, "u_click");
             var transToOrigin = gl.getUniformLocation(shaderProgram, "u_transToOrigin");
             var transFromOrigin = gl.getUniformLocation(shaderProgram, "u_transFromOrigin");
-            canvas.onmousedown = function (ev) { click(ev, gl, canvas,angle,click,transToOrigin,transFromOrigin,x,y); };
+            canvas.onmousedown = function (ev) { click(ev, gl, canvas,angle,click,transToOrigin,transFromOrigin); };
             var i = 1.0;
             var angleDegree = 5;
-           function click(ev, gl, canvas,angle,click,transToOrigin,transFromOrigin,x,y){
+           function click(ev, gl, canvas,angle,click,transToOrigin,transFromOrigin){
                
                         console.log('angle'+angleDegree);
                         var angleRadian = (angleDegree * Math.PI) / 180;
@@ -175,11 +173,8 @@
                         ]);
 
           
-                        console.log("Nothing is happening");
                         gl.uniform1f(angle,angleRadian);
                         gl.uniform1f(u_click,i);
-                        console.log('i'+i);
-                        console.log("Nothing is happening2");
                         gl.uniformMatrix4fv(transToOrigin, false, translateToOrigin);
                         gl.uniformMatrix4fv(transFromOrigin, false, translateFromOrigin);
                         
@@ -189,7 +184,7 @@
                         
                         
                         drawElement(gl.LINES,squareVertices,8);
-                        angleDegree = angleDegree + 5;
+                         angleDegree += 5;
                         
                    
           }
