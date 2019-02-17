@@ -11,11 +11,41 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Rotate on mouse click</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-  
+    <style>
+        html,body{
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            cursor: pointer;
+
+        }
+        h1{
+            display: inline-block;
+            padding: .3em;
+            font-family: sans-serif;
+            font-size: 16px;
+            position: absolute;
+            top: 80%;
+            left: 2%;
+            user-select: none;
+            color: rgba(255,255,255,.98);
+            border: .075em solid rgba(255,255,255,.3);
+        }
+        canvas{
+            
+            display: block;
+            
+        }
+
+
+    </style>
+    
     
 </head>
 <body>
     <canvas id="canvas" width=600 height=600></canvas>
+    <h1>Click Anywhere</h1>
     <script>
             /*********************************************
                      INITIAL SETUP
@@ -23,12 +53,7 @@
 
             var canvas = document.getElementById('canvas');
             gl = canvas.getContext('experimental-webgl');
-
-            // make canvas 1x1 with display
-            // gl.canvas.width  = gl.canvas.clientWidth  * window.devicePixelRatio;
-            // gl.canvas.height = gl.canvas.clientHeight * window.devicePixelRatio;
             gl.viewport(0, 0, canvas.width, canvas.height);
-
             gl.clearColor(0.5, 0.5, 0.5, 1);
             gl.enable(gl.DEPTH_TEST);
             gl.clear(gl.COLOR_BUFFER_BIT);
@@ -41,20 +66,27 @@
             /**********Vertex Shader**********************/
             var vertCode =
                 'precision mediump float;'+
-                'attribute vec3 position;'+
+                'attribute vec4 position;'+
                 'uniform float u_angle;'+
-                'uniform float u_x;'+
-                'uniform float u_y;'+
-                'float angleRadian =  radians(u_angle);'+
-                'float rotatedX = u_x * cos(u_angle) - u_y * sin(u_angle);'+
-                'float rotatedY = u_y * cos(u_angle) + u_x * sin(u_angle);'+
+                'uniform float u_click;'+
+                'uniform mat4 u_transToOrigin;'+
+                'uniform mat4 u_transFromOrigin;'+
+                 'mat4 matrix=mat4('+
+                    'cos(u_angle), sin(u_angle),  0.0,     0.0,'+
+                    '-sin(u_angle),cos(u_angle),  0.0,     0.0,'+
+                    '0.0,             0.0,            0.0,     0.0,'+
+                    '0.0,             0.0,            0.0,    1.0);'+
+                
                 'void main(void) {'+
-                 'if(u_x == 1.0){'+
-                    'gl_Position = vec4((position.x * cos(0.0872665) - position.y * sin(0.0872665)),(position.y * cos(0.0872665) + position.x * sin(0.0872665)),0,1);'+
-                   'gl_PointSize = 1.0;'+
+                    'if (u_click >= 1.0) gl_Position = position * (u_transToOrigin * matrix * u_transFromOrigin);'+
+                    'else gl_Position = position;'+
+                    'gl_PointSize = 1.0;'+
 
-                 '}'+
+
+
                 '}';
+
+                
 
             var vertShader = gl.createShader(gl.VERTEX_SHADER);
             gl.shaderSource(vertShader, vertCode);
@@ -81,19 +113,20 @@
             /*********************************************
                      SQUARE VERTICES
             **********************************************/
-            var squareVertices = [
-                 -0.2,0.6,
-                 0.4,0.6,
+     
+            var squareVertices = new Float32Array([
+                -0.1,0.1,0.0,
+                 0.1,0.1,0.0,
 
-                 -0.2,0.6,
-                 -0.2,0.8,
+                 -0.1,0.1,0.0,
+                 -0.1,0.2,0.0,
 
-                 -0.2,0.8,
-                  0.4,0.8,
+                 -0.1,0.2,0.0,
+                  0.1,0.2,0.0,
 
-                  0.4,0.8,
-                  0.4,0.6
-            ];
+                  0.1,0.2,0.0,
+                  0.1,0.1,0.0
+                        ]);
            
             /*********************************************
                      BINDING VERTICES WITH SHADERS
@@ -102,10 +135,9 @@
             function drawElement(type,vertices,len) {
                 var vertexBuffer = gl.createBuffer();
                 gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices),gl.STATIC_DRAW);
-                
+                gl.bufferData(gl.ARRAY_BUFFER, vertices,gl.STATIC_DRAW);
                 var position = gl.getAttribLocation(shaderProgram, 'position');
-                gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+                gl.vertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0);
                 gl.enableVertexAttribArray(position);
                 
                 gl.drawArrays(type, 0, len);
@@ -119,26 +151,45 @@
             var angle = gl.getUniformLocation(shaderProgram, "u_angle");
             var x = gl.getUniformLocation(shaderProgram, "u_x");
             var y = gl.getUniformLocation(shaderProgram, "u_y");
-            canvas.onmousedown = function (ev) { click(ev, gl, canvas, angle,x,y); };
-           function click(ev, gl, canvas, angle,x,y){
+            var u_click = gl.getUniformLocation(shaderProgram, "u_click");
+            var transToOrigin = gl.getUniformLocation(shaderProgram, "u_transToOrigin");
+            var transFromOrigin = gl.getUniformLocation(shaderProgram, "u_transFromOrigin");
+            canvas.onmousedown = function (ev) { click(ev, gl, canvas,angle,click,transToOrigin,transFromOrigin,x,y); };
+            var i = 1.0;
+            var angleDegree = 5;
+           function click(ev, gl, canvas,angle,click,transToOrigin,transFromOrigin,x,y){
                
-                 
-                        var rotatingAngle = 0.0872665;
-                        var click = 1.0;
-                        //var rotatingAngle = Math.random();
-                
+                        console.log('angle'+angleDegree);
+                        var angleRadian = (angleDegree * Math.PI) / 180;
+                        var translateToOrigin = new Float32Array([
+                            1.0,  0.0,  0.0, -0.1, 
+                            0.0,  1.0,  0.0, 0.1,
+                            0.0,  0.0,  1.0, 0.0,
+                            0.0,  0.0,  0.0, 1.0
+                        ]);
+                        var translateFromOrigin = new Float32Array([
+                            1.0,  0.0,  0.0, 0.1, 
+                            0.0,  1.0,  0.0, -0.1,
+                            0.0,  0.0,  1.0, 0.0,
+                            0.0,  0.0,  0.0, 1.0
+                        ]);
+
+          
                         console.log("Nothing is happening");
-                        gl.uniform1f(angle,rotatingAngle);
-                        gl.uniform1f(x,click);
-                        // gl.uniform1f(y,rotationY);
+                        gl.uniform1f(angle,angleRadian);
+                        gl.uniform1f(u_click,i);
+                        console.log('i'+i);
                         console.log("Nothing is happening2");
+                        gl.uniformMatrix4fv(transToOrigin, false, translateToOrigin);
+                        gl.uniformMatrix4fv(transFromOrigin, false, translateFromOrigin);
+                        
                         gl.clearColor(0.5, 0.5, 0.5, 1);
                         gl.enable(gl.DEPTH_TEST);
                         gl.clear(gl.COLOR_BUFFER_BIT);
                         
                         
                         drawElement(gl.LINES,squareVertices,8);
-                        //var click = 0.0;
+                        angleDegree = angleDegree + 5;
                         
                    
           }
