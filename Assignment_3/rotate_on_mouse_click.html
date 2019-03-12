@@ -152,10 +152,10 @@
             var u_click = gl.getUniformLocation(shaderProgram, "u_click");
             var transToOrigin = gl.getUniformLocation(shaderProgram, "u_transToOrigin");
             var transFromOrigin = gl.getUniformLocation(shaderProgram, "u_transFromOrigin");
-            canvas.onmousedown = function (ev) { click(ev, gl, canvas,angle,click,transToOrigin,transFromOrigin); };
+            canvas.onmousedown = function (ev) { click(ev, gl, canvas); };
             var i = 1.0;
             var angleDegree = 5;
-           function click(ev, gl, canvas,angle,click,transToOrigin,transFromOrigin){
+           function click(ev, gl, canvas){
                
                         console.log('angle'+angleDegree);
                         var angleRadian = (angleDegree * Math.PI) / 180;
