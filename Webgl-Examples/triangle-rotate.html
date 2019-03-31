@@ -1,0 +1,193 @@
+<!doctype html>
+<html>
+   <body>
+      <canvas width = "570" height = "570" id = "my_Canvas"></canvas>
+
+      <script>
+         /*================Creating a canvas=================*/
+         var canvas = document.getElementById('my_Canvas');
+         gl = canvas.getContext('experimental-webgl'); 
+
+         /*==========Defining and storing the geometry=======*/
+         
+
+         //triangle
+         var vertices = 
+         [ // X, Y,       R, G, B
+            0.0, 0.5,  
+            -0.5, -0.5, 
+            0.5, -0.5,  
+      ]; 
+
+            
+         // Create an empty buffer object to store the vertex buffer
+         var vertex_buffer = gl.createBuffer();
+		 
+
+         //Bind appropriate array buffer to it
+         gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+
+         // Pass the vertex data to the buffer
+         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+         
+
+         /*=========================Shaders========================*/
+
+         // vertex shader source code
+         var vertCode =
+            'attribute vec2 coordinates;' +
+            //'attribute vec3 color;' +
+            //'varying vec3 vColor;'+
+            'uniform float u_click;'+
+            'uniform vec2 u_rotation;'+
+             'vec2 rotatedPosition = vec2('+
+               'coordinates.x * u_rotation.y + coordinates.y * u_rotation.x,'+
+               'coordinates.y * u_rotation.y - coordinates.x * u_rotation.x);'+
+            // 'mat4 inverseRotation=mat4('+
+            //         'cos(-0.7853981634), sin(-0.7853981634),  0.0,     0.0,' +
+            //         '-sin(-0.7853981634),cos(-0.7853981634),  0.0,     0.0,'+
+            //         '0.0, 0.0, 1.0,     0.0,'+
+            //         '0.0,0.0, 0.0,    1.0);'+
+            // 'mat4 translateV1 = mat4('+
+            //         '1.0, 0.0,  0.0,     0.0,'+
+            //         '0.0, 1.0,  1.0,     0.0,'+
+            //         '0.0, 1.0,  1.0,     0.0,'+
+            //         '0.0, 0.5,  0.0,     1.0);'+
+            // 'mat4 translateV2 = mat4('+
+            //         '1.0, 0.0,  0.0,     0.0,'+
+            //         '0.0, 1.0,  1.0,     0.0,'+
+            //         '0.0, 1.0,  1.0,     0.0,'+
+            //         '0.0, -0.5,  0.0,     1.0);'+
+            // 'mat4 rotationPosition = mat4('+
+            //         '0.0,0.0,0.0,0.0,'+
+            //         '0.0,0.5,0.0,0.0,'+
+            //         '0.0,0.0,0.0,0.0,'+
+            //         '0.0,0.0,0.0,1.0);'+
+            // 'mat4 final = rotation + rotationPosition;'+
+            'void main(void) {' +
+               //'vColor = color;' +
+               'if(u_click == 1.0) {'+
+                //    'gl_Position =  vec4(final,0.0,1.0) ;' +
+                '}'+  
+               'else if(u_click > 1.0) gl_Position = vec4(coordinates,0.0,1);' +
+               'else  gl_Position = vec4(coordinates,0.0,1);' +
+               
+               'gl_PointSize = 10.0;'+
+            '}';
+         // Create a vertex shader object
+         var vertShader = gl.createShader(gl.VERTEX_SHADER);
+         
+         // Attach vertex shader source code
+         gl.shaderSource(vertShader, vertCode);
+
+         // Compile the vertex shader
+         gl.compileShader(vertShader);
+
+         // fragment shader source code
+         var fragCode =
+		 ' precision mediump float;'+
+            //'varying vec3 vColor;' +
+        
+            'void main(void) {' +
+               ' gl_FragColor = vec4(1,0,1,1);' +
+            '}';
+
+         // Create fragment shader object
+         var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+
+         // Attach fragment shader source code
+         gl.shaderSource(fragShader, fragCode);
+
+         // Compile the fragmentt shader
+         gl.compileShader(fragShader);
+         
+         // Create a shader program object to store
+         // the combined shader program
+         var shaderProgram = gl.createProgram();
+
+         // Attach a vertex shader
+         gl.attachShader(shaderProgram, vertShader); 
+
+         // Attach a fragment shader
+         gl.attachShader(shaderProgram, fragShader);
+
+         // Link both programs
+         gl.linkProgram(shaderProgram);
+
+         // Use the combined shader program object
+         gl.useProgram(shaderProgram);
+
+         /*======== Associating shaders to buffer objects ========*/
+
+        
+
+         // Get the attribute location
+         var coord = gl.getAttribLocation(shaderProgram, "coordinates");
+		 // Point an attribute to the currently bound VBO
+         gl.vertexAttribPointer(coord, 2, gl.FLOAT, false, 0, 0);
+      
+
+         // Enable the attribute
+         gl.enableVertexAttribArray(coord);
+		 
+       // at init time
+       
+    //    var color = gl.getAttribLocation(shaderProgram, "color");
+    //    gl.vertexAttribPointer(color, 3, gl.FLOAT, false, 0, 0);
+      
+       //gl.enableVertexAttribArray(color);
+       var u_clickLocation = gl.getUniformLocation(shaderProgram,"u_click");
+       var rotationLocation = gl.getUniformLocation(shaderProgram, "u_rotation");
+       var rotation = [0, 1];
+
+canvas.onmousedown = function (ev) { eventClick(ev, gl, canvas); };
+
+var click = 1.0;
+function eventClick(ev, gl, canvas)
+{
+    rotation[0] = Math.sin(0.7853981634);
+    rotation[1] = Math.cos(0.7853981634);
+    gl.uniform1f(u_clickLocation,click);
+    gl.uniform2fv(rotationLocation, rotation);
+    gl.clearColor(0.5, 0.5, 0.5, 0.9);
+   
+         // Enable the depth test
+         gl.enable(gl.DEPTH_TEST);
+ 
+         // Clear the color buffer bit
+         gl.clear(gl.COLOR_BUFFER_BIT);
+
+         // Set the view port
+         gl.viewport(0,0,canvas.width,canvas.height);
+
+         gl.drawArrays(gl.TRIANGLES,0,3);
+    click++;
+    //click = 0.0;
+
+}
+// at render time
+
+			
+         
+		 
+
+         /*============= Drawing the primitive ===============*/
+
+         // Clear the canvas
+         gl.clearColor(0.5, 0.5, 0.5, 0.9);
+
+         // Enable the depth test
+         gl.enable(gl.DEPTH_TEST);
+ 
+         // Clear the color buffer bit
+         gl.clear(gl.COLOR_BUFFER_BIT);
+
+         // Set the view port
+         gl.viewport(0,0,canvas.width,canvas.height);
+
+         // Draw the triangle
+         gl.drawArrays(gl.TRIANGLES,0,3);
+      </script>
+   </body>
+</html>

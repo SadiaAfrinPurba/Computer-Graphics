@@ -1,0 +1,49 @@
+ 
+ <html>
+ <head>
+     <meta charset="utf-8" />
+     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+     <title>TEXTURE EXAMPLE</title>
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+     <style>
+         html,body{
+             height: 100%;
+             width: 100%;
+             margin: 0;
+             padding: 0;
+             cursor: pointer;
+ 
+         }
+         h1{
+             display: inline-block;
+             padding: .3em;
+             font-family: sans-serif;
+             font-size: 16px;
+             position: absolute;
+             top: 80%;
+             left: 2%;
+             user-select: none;
+             color: orangered;
+             border: .075em solid rgba(255,255,255,.3);
+         }
+         canvas{
+             
+             display: block;
+             
+         }
+ 
+ 
+     </style>
+     
+ </head>
+ <body>
+     <canvas id="canvas" width="600" height="400"></canvas>
+     <h1>Press up/down  or Press 'C' for camera transformation or Press any key for rotation</h1>
+     
+  
+	<img id="image" src="mars.jpg" width="0" height="0"></img> 
+     <script src="gl-matrix.js"></script>
+     <script src="main.js"></script>
+     
+ </body>
+ </html>

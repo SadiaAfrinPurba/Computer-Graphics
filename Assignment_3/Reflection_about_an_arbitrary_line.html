@@ -73,9 +73,9 @@
                 'uniform mat4 u_inverseRotate;'+
                 'uniform mat4 u_inverseTranslate;'+
                 'void main(void) {'+      
-                'if (u_click == 1.0) gl_Position = (position * ( u_translate * u_rotate * u_reflect * u_inverseRotate * u_inverseTranslate));'+
-                'else gl_Position = position;'+
-                'gl_PointSize = 1.0;'+
+                  'if (u_click == 1.0) gl_Position = (position * ( u_translate * u_rotate * u_reflect * u_inverseRotate * u_inverseTranslate));'+
+                  'else gl_Position = position;'+
+                  'gl_PointSize = 1.0;'+
                 '}';
 
             var vertShader = gl.createShader(gl.VERTEX_SHADER);
